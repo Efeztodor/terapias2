@@ -39,13 +39,17 @@ const CoursesSection = () => {
           <p className="text-sm tracking-[0.25em] uppercase text-primary font-medium mb-3">
             Formación
           </p>
-          <h2 className="text-3xl md:text-5xl font-heading font-light">
-            Cursos y <span className="italic font-medium text-gradient-primary">talleres</span>
-          </h2>
+          <h1 className="text-3xl md:text-5xl font-heading font-light">
+            Cursos y talleres
+          </h1>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {courses.map((course, index) => (
+          {courses.map((course, index) => {
+            const isFirst = index === 0;
+            const isSecond = index === 1;
+            const isThird = index === 2;
+            return (
             <motion.div
               key={course.title}
               initial={{ opacity: 0, y: 30 }}
@@ -54,9 +58,17 @@ const CoursesSection = () => {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               className="rounded-2xl bg-card border border-border/50 p-8 flex flex-col hover:shadow-lg transition-shadow duration-300"
             >
-              <h3 className="text-xl font-heading font-medium mb-3">
-                {course.title}
-              </h3>
+              <h2 className="text-xl font-heading font-medium mb-2">
+                {isFirst ? "Árbol genealógico" : isSecond ? "Árbol de méritos" : "Taller de Psicogenealogía"}
+              </h2>
+              {isFirst && <h3 className="text-lg font-heading font-medium mb-3">Psicogenealogía</h3>}
+              {isThird && (
+                <>
+                  <h3 className="text-base font-heading font-medium mb-1">Taller</h3>
+                  <h3 className="text-base font-heading font-medium mb-1">Curso</h3>
+                  <h3 className="text-base font-heading font-medium mb-3">Árbol genealógico</h3>
+                </>
+              )}
               <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
                 {course.description}
               </p>
@@ -75,7 +87,8 @@ const CoursesSection = () => {
                 Más Información
               </a>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

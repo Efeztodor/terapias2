@@ -52,9 +52,9 @@ const TherapiesSection = () => {
           <p className="text-sm tracking-[0.25em] uppercase text-primary font-medium mb-3">
             Mis Terapias
           </p>
-          <h2 className="text-3xl md:text-5xl font-heading font-light">
-            Caminos hacia tu <span className="italic font-medium text-gradient-primary">sanación</span>
-          </h2>
+          <h1 className="text-3xl md:text-5xl font-heading font-light">
+            Terapias
+          </h1>
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,9 +70,9 @@ const TherapiesSection = () => {
               <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
                 {therapy.icon ? <therapy.icon size={24} /> : <span className="text-base font-extrabold tracking-tight">{(therapy as any).customLabel}</span>}
               </div>
-              <h3 className="text-xl font-heading font-medium mb-3">
+              <h2 className="text-xl font-heading font-medium mb-3">
                 {therapy.title}
-              </h3>
+              </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {therapy.description}
               </p>

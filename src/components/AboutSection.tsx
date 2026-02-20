@@ -30,10 +30,7 @@ const AboutSection = () => {
               Sobre Mí
             </p>
             <h2 className="text-3xl md:text-4xl font-heading font-light mb-6 leading-tight">
-              Hola, soy{" "}
-              <span className="text-gradient-primary font-medium italic">
-                Paola Paredes
-              </span>
+              <span className="text-gradient-primary font-medium italic">Paola Paredes</span>
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">​Soy Ingeniera de profesión y terapeuta por vocación, con formación en Terapia de respuesta espiritual (TRE), Reestructuración espiritual, Psicogenealogía y BioReprogramación. Cuento además con conocimiento en 5 leyes biológicas, una maravillosa forma de comprender el cuerpo.
 
