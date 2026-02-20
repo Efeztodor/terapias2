@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import HeroSection from "@/components/HeroSection";
 import AboutSection from "@/components/AboutSection";
 import TherapiesSection from "@/components/TherapiesSection";
@@ -18,6 +19,7 @@ const Index = () => {
       <AgendaSection />
       <ContactSection />
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
