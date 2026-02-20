@@ -1,6 +1,6 @@
 # Railway: build y arranque para frontend + API PostgreSQL
 [build]
-buildCommand = "npm run build"
+buildCommand = "npm install --include=dev && npm run build"
 
 [deploy]
 startCommand = "npm start"
