@@ -16,17 +16,15 @@ const AgendaSection = () => {
             <CalendarCheck size={32} />
           </div>
           <h2 className="text-3xl md:text-4xl font-heading font-light mb-4">
-            Reserva tu sesión
+            Reserva tu{" "}
+            <span className="italic font-medium text-gradient-primary">sesión</span>
           </h2>
-          <h3 className="sr-only">Agendar cita</h3>
-          <h3 className="sr-only">Reservar cita</h3>
-          <h3 className="sr-only">Correo electrónico</h3>
           <p className="text-muted-foreground mb-8 leading-relaxed">
-            Al momento de reservar recibirás las instrucciones para poder tomar la sesión. ¡No dudes en consultar!
+            Al momento de reservar recibirás las instrucciones para poder tomar la sesión. ¡No dudes en consultar!                        
+          
           </p>
           <a
             href="https://wa.me/56977929416?text=Hola,%20quiero%20agendar"
-            aria-label="Agendar cita por WhatsApp"
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => {
