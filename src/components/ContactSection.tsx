@@ -1,6 +1,29 @@
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Instagram, Facebook, Youtube } from "lucide-react";
+import { Mail, MapPin, Instagram, Facebook, Youtube } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/integrations/api/client";
+
+const SOCIAL_DEFAULTS = {
+  instagram: { url: "https://instagram.com/paola.cyc", label: "Instagram" },
+  facebook: { url: "https://www.facebook.com/share/18M4oaggvG/?mibextid=wwXIfr", label: "Facebook" },
+  youtube: { url: "https://youtube.com/@pao.terapeuta", label: "YouTube" },
+  tiktok: { url: "https://www.tiktok.com/@paola.terapeuta.cyc", label: "TikTok" },
+};
+
+const TikTokIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
+
 const ContactSection = () => {
+  const { data } = useQuery({
+    queryKey: ["settings"],
+    queryFn: () => api.get<{ social?: typeof SOCIAL_DEFAULTS }>("/api/settings"),
+    staleTime: 5 * 60 * 1000,
+  });
+  const social = data?.social ?? SOCIAL_DEFAULTS;
+
   return <section id="contacto" className="py-24 bg-lavender">
       <div className="container mx-auto px-4">
         <motion.div initial={{
@@ -76,21 +99,21 @@ const ContactSection = () => {
                 </div>
               </div>
               <div className="flex flex-col gap-3 pl-14">
-                <a href="https://instagram.com/paola.cyc" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
+                <a href={social.instagram.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
                   <Instagram size={18} />
-                  <span>@paola.cyc</span>
+                  <span>{social.instagram.label}</span>
                 </a>
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
+                <a href={social.facebook.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
                   <Facebook size={18} />
-                  <span>Paola Andrea P</span>
+                  <span>{social.facebook.label}</span>
                 </a>
-                <a href="https://youtube.com/@pao.terapeuta" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
+                <a href={social.youtube.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
                   <Youtube size={18} />
-                  <span>Pao.terapeuta</span>
+                  <span>{social.youtube.label}</span>
                 </a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" /></svg>
-                  <span>@paola.cyc</span>
+                <a href={social.tiktok.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-sm hover:text-primary transition-colors">
+                  <TikTokIcon />
+                  <span>{social.tiktok.label}</span>
                 </a>
               </div>
             </div>

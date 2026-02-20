@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type Settings = { whatsappNumber: string; whatsappMessage: string };
+type Social = { url: string; label: string };
+type Settings = {
+  whatsappNumber: string;
+  whatsappMessage: string;
+  social?: { instagram: Social; facebook: Social; youtube: Social; tiktok: Social };
+};
+
+const defaultSocial = (): Settings["social"] => ({
+  instagram: { url: "https://instagram.com/paola.cyc", label: "Instagram" },
+  facebook: { url: "https://www.facebook.com/share/18M4oaggvG/?mibextid=wwXIfr", label: "Facebook" },
+  youtube: { url: "https://youtube.com/@pao.terapeuta", label: "YouTube" },
+  tiktok: { url: "https://www.tiktok.com/@paola.terapeuta.cyc", label: "TikTok" },
+});
 
 const Admin = () => {
   const queryClient = useQueryClient();
@@ -18,20 +30,23 @@ const Admin = () => {
 
   const [number, setNumber] = useState("");
   const [message, setMessage] = useState("");
+  const [social, setSocial] = useState<Settings["social"]>(defaultSocial);
 
   useEffect(() => {
     if (data) {
       setNumber(data.whatsappNumber ?? "");
       setMessage(data.whatsappMessage ?? "");
+      setSocial(data.social ?? defaultSocial());
     }
   }, [data]);
 
   const mutation = useMutation({
-    mutationFn: (body: Partial<Settings>) => api.patch<Settings>("/api/settings", body),
+    mutationFn: (body: Record<string, string>) => api.patch<Settings>("/api/settings", body),
     onSuccess: (updated) => {
       queryClient.setQueryData(["settings"], updated);
       setNumber(updated.whatsappNumber ?? "");
       setMessage(updated.whatsappMessage ?? "");
+      setSocial(updated.social ?? defaultSocial());
       toast.success("Configuración guardada");
     },
     onError: (err: Error) => {
@@ -41,7 +56,25 @@ const Admin = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ whatsappNumber: number, whatsappMessage: message });
+    mutation.mutate({
+      whatsappNumber: number,
+      whatsappMessage: message,
+      socialInstagramUrl: social?.instagram.url ?? "",
+      socialInstagramLabel: social?.instagram.label ?? "",
+      socialFacebookUrl: social?.facebook.url ?? "",
+      socialFacebookLabel: social?.facebook.label ?? "",
+      socialYoutubeUrl: social?.youtube.url ?? "",
+      socialYoutubeLabel: social?.youtube.label ?? "",
+      socialTiktokUrl: social?.tiktok.url ?? "",
+      socialTiktokLabel: social?.tiktok.label ?? "",
+    });
+  };
+
+  const updateSocial = (key: keyof NonNullable<Settings["social"]>, field: "url" | "label", value: string) => {
+    setSocial((prev) => {
+      const s = prev ?? defaultSocial();
+      return { ...s, [key]: { ...s[key], [field]: value } };
+    });
   };
 
   return (
@@ -55,38 +88,65 @@ const Admin = () => {
         </Link>
         <h1 className="text-2xl font-heading font-light mb-2">Administración</h1>
         <p className="text-sm text-muted-foreground mb-8">
-          Configuración del botón flotante de WhatsApp.
+          WhatsApp flotante y enlaces de redes sociales (sección Contacto).
         </p>
 
         {isLoading ? (
           <p className="text-muted-foreground">Cargando...</p>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp-number">Número de WhatsApp</Label>
-              <Input
-                id="whatsapp-number"
-                type="text"
-                placeholder="56977929416"
-                value={number}
-                onChange={(e) => setNumber(e.target.value)}
-                className="w-full"
-              />
-              <p className="text-xs text-muted-foreground">
-                Solo dígitos, con código de país (ej. 56 para Chile).
-              </p>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-6">
+              <h2 className="text-lg font-medium">WhatsApp</h2>
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp-number">Número</Label>
+                <Input
+                  id="whatsapp-number"
+                  type="text"
+                  placeholder="56977929416"
+                  value={number}
+                  onChange={(e) => setNumber(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Solo dígitos, con código de país (ej. 56 para Chile).
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp-message">Mensaje por defecto</Label>
+                <Input
+                  id="whatsapp-message"
+                  type="text"
+                  placeholder="Hola, quiero agendar una sesión"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="w-full"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp-message">Mensaje por defecto</Label>
-              <Input
-                id="whatsapp-message"
-                type="text"
-                placeholder="Hola, quiero agendar una sesión"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full"
-              />
+
+            <div className="space-y-6">
+              <h2 className="text-lg font-medium">Redes sociales</h2>
+              {(["instagram", "facebook", "youtube", "tiktok"] as const).map((key) => (
+                <div key={key} className="rounded-lg border border-border/50 p-4 space-y-2">
+                  <Label className="capitalize">{key}</Label>
+                  <Input
+                    type="url"
+                    placeholder="URL"
+                    value={social?.[key]?.url ?? ""}
+                    onChange={(e) => updateSocial(key, "url", e.target.value)}
+                    className="w-full"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Texto visible (ej. Instagram)"
+                    value={social?.[key]?.label ?? ""}
+                    onChange={(e) => updateSocial(key, "label", e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              ))}
             </div>
+
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "Guardando..." : "Guardar"}
             </Button>

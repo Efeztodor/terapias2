@@ -37,10 +37,18 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-// Crear tabla site_settings si no existe (clave-valor para WhatsApp y futuras opciones)
+// Crear tabla site_settings si no existe (clave-valor para WhatsApp, redes sociales, etc.)
 const SETTINGS_DEFAULTS = {
   whatsapp_number: '56977929416',
   whatsapp_message: 'Hola, quiero agendar una sesión',
+  social_instagram_url: 'https://instagram.com/paola.cyc',
+  social_instagram_label: 'Instagram',
+  social_facebook_url: 'https://www.facebook.com/share/18M4oaggvG/?mibextid=wwXIfr',
+  social_facebook_label: 'Facebook',
+  social_youtube_url: 'https://youtube.com/@pao.terapeuta',
+  social_youtube_label: 'YouTube',
+  social_tiktok_url: 'https://www.tiktok.com/@paola.terapeuta.cyc',
+  social_tiktok_label: 'TikTok',
 };
 
 async function ensureSettingsTable() {
@@ -55,10 +63,32 @@ async function ensureSettingsTable() {
   const hasNumber = rows.some((r) => r.key === 'whatsapp_number');
   if (!hasNumber) {
     await pool.query(
-      'INSERT INTO site_settings (key, value) VALUES ($1, $2), ($3, $4) ON CONFLICT (key) DO NOTHING',
-      ['whatsapp_number', SETTINGS_DEFAULTS.whatsapp_number, 'whatsapp_message', SETTINGS_DEFAULTS.whatsapp_message]
+      `INSERT INTO site_settings (key, value) VALUES
+       ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10), ($11, $12), ($13, $14), ($15, $16), ($17, $18), ($19, $20)
+       ON CONFLICT (key) DO NOTHING`,
+      [
+        'whatsapp_number', SETTINGS_DEFAULTS.whatsapp_number,
+        'whatsapp_message', SETTINGS_DEFAULTS.whatsapp_message,
+        'social_instagram_url', SETTINGS_DEFAULTS.social_instagram_url,
+        'social_instagram_label', SETTINGS_DEFAULTS.social_instagram_label,
+        'social_facebook_url', SETTINGS_DEFAULTS.social_facebook_url,
+        'social_facebook_label', SETTINGS_DEFAULTS.social_facebook_label,
+        'social_youtube_url', SETTINGS_DEFAULTS.social_youtube_url,
+        'social_youtube_label', SETTINGS_DEFAULTS.social_youtube_label,
+        'social_tiktok_url', SETTINGS_DEFAULTS.social_tiktok_url,
+        'social_tiktok_label', SETTINGS_DEFAULTS.social_tiktok_label,
+      ]
     );
   }
+}
+
+function mapToSocial(map) {
+  return {
+    instagram: { url: map.social_instagram_url ?? SETTINGS_DEFAULTS.social_instagram_url, label: map.social_instagram_label ?? SETTINGS_DEFAULTS.social_instagram_label },
+    facebook: { url: map.social_facebook_url ?? SETTINGS_DEFAULTS.social_facebook_url, label: map.social_facebook_label ?? SETTINGS_DEFAULTS.social_facebook_label },
+    youtube: { url: map.social_youtube_url ?? SETTINGS_DEFAULTS.social_youtube_url, label: map.social_youtube_label ?? SETTINGS_DEFAULTS.social_youtube_label },
+    tiktok: { url: map.social_tiktok_url ?? SETTINGS_DEFAULTS.social_tiktok_url, label: map.social_tiktok_label ?? SETTINGS_DEFAULTS.social_tiktok_label },
+  };
 }
 
 // GET configuración para el frontend (WhatsApp flotante, etc.)
@@ -69,6 +99,7 @@ app.get('/api/settings', async (_req, res) => {
       return res.json({
         whatsappNumber: SETTINGS_DEFAULTS.whatsapp_number,
         whatsappMessage: SETTINGS_DEFAULTS.whatsapp_message,
+        social: mapToSocial(SETTINGS_DEFAULTS),
       });
     }
     const { rows } = await pool.query('SELECT key, value FROM site_settings');
@@ -76,11 +107,13 @@ app.get('/api/settings', async (_req, res) => {
     res.json({
       whatsappNumber: map.whatsapp_number ?? SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: map.whatsapp_message ?? SETTINGS_DEFAULTS.whatsapp_message,
+      social: mapToSocial(map),
     });
   } catch (err) {
     res.json({
       whatsappNumber: SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: SETTINGS_DEFAULTS.whatsapp_message,
+      social: mapToSocial(SETTINGS_DEFAULTS),
     });
   }
 });
@@ -92,7 +125,28 @@ app.patch('/api/settings', async (req, res) => {
     if (!pool) {
       return res.status(503).json({ error: 'Database not configured' });
     }
-    const { whatsappNumber, whatsappMessage } = req.body || {};
+    const body = req.body || {};
+    const { whatsappNumber, whatsappMessage } = body;
+    const socialBody = {
+      socialInstagramUrl: body.socialInstagramUrl,
+      socialInstagramLabel: body.socialInstagramLabel,
+      socialFacebookUrl: body.socialFacebookUrl,
+      socialFacebookLabel: body.socialFacebookLabel,
+      socialYoutubeUrl: body.socialYoutubeUrl,
+      socialYoutubeLabel: body.socialYoutubeLabel,
+      socialTiktokUrl: body.socialTiktokUrl,
+      socialTiktokLabel: body.socialTiktokLabel,
+    };
+    const keyMap = {
+      socialInstagramUrl: 'social_instagram_url',
+      socialInstagramLabel: 'social_instagram_label',
+      socialFacebookUrl: 'social_facebook_url',
+      socialFacebookLabel: 'social_facebook_label',
+      socialYoutubeUrl: 'social_youtube_url',
+      socialYoutubeLabel: 'social_youtube_label',
+      socialTiktokUrl: 'social_tiktok_url',
+      socialTiktokLabel: 'social_tiktok_label',
+    };
     if (whatsappNumber != null) {
       const clean = String(whatsappNumber).replace(/\D/g, '');
       if (clean) {
@@ -108,11 +162,21 @@ app.patch('/api/settings', async (req, res) => {
         ['whatsapp_message', String(whatsappMessage).trim()]
       );
     }
+    for (const [apiKey, dbKey] of Object.entries(keyMap)) {
+      const val = socialBody[apiKey];
+      if (val != null && String(val).trim() !== '') {
+        await pool.query(
+          'INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+          [dbKey, String(val).trim()]
+        );
+      }
+    }
     const { rows } = await pool.query('SELECT key, value FROM site_settings');
     const map = Object.fromEntries(rows.map((r) => [r.key, r.value]));
     res.json({
       whatsappNumber: map.whatsapp_number ?? SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: map.whatsapp_message ?? SETTINGS_DEFAULTS.whatsapp_message,
+      social: mapToSocial(map),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
