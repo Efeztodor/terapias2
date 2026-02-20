@@ -11,6 +11,7 @@ type Social = { url: string; label: string };
 type Settings = {
   whatsappNumber: string;
   whatsappMessage: string;
+  whatsappTooltip?: string;
   social?: { instagram: Social; facebook: Social; youtube: Social; tiktok: Social };
 };
 
@@ -30,12 +31,14 @@ const Admin = () => {
 
   const [number, setNumber] = useState("");
   const [message, setMessage] = useState("");
+  const [tooltip, setTooltip] = useState("");
   const [social, setSocial] = useState<Settings["social"]>(defaultSocial);
 
   useEffect(() => {
     if (data) {
       setNumber(data.whatsappNumber ?? "");
       setMessage(data.whatsappMessage ?? "");
+      setTooltip(data.whatsappTooltip ?? "");
       setSocial(data.social ?? defaultSocial());
     }
   }, [data]);
@@ -46,6 +49,7 @@ const Admin = () => {
       queryClient.setQueryData(["settings"], updated);
       setNumber(updated.whatsappNumber ?? "");
       setMessage(updated.whatsappMessage ?? "");
+      setTooltip(updated.whatsappTooltip ?? "");
       setSocial(updated.social ?? defaultSocial());
       toast.success("Configuración guardada");
     },
@@ -59,6 +63,7 @@ const Admin = () => {
     mutation.mutate({
       whatsappNumber: number,
       whatsappMessage: message,
+      whatsappTooltip: tooltip,
       socialInstagramUrl: social?.instagram.url ?? "",
       socialInstagramLabel: social?.instagram.label ?? "",
       socialFacebookUrl: social?.facebook.url ?? "",
@@ -119,6 +124,17 @@ const Admin = () => {
                   placeholder="Hola, quiero agendar una sesión"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp-tooltip">Texto del tooltip (al pasar el mouse)</Label>
+                <Input
+                  id="whatsapp-tooltip"
+                  type="text"
+                  placeholder="💬 ¡Hablemos, con gusto te oriento!"
+                  value={tooltip}
+                  onChange={(e) => setTooltip(e.target.value)}
                   className="w-full"
                 />
               </div>

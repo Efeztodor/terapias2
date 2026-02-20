@@ -41,6 +41,7 @@ app.get('/api/health', async (_req, res) => {
 const SETTINGS_DEFAULTS = {
   whatsapp_number: '56977929416',
   whatsapp_message: 'Hola, quiero agendar una sesión',
+  whatsapp_tooltip: '💬 ¡Hablemos, con gusto te oriento!',
   social_instagram_url: 'https://instagram.com/paola.cyc',
   social_instagram_label: 'Instagram',
   social_facebook_url: 'https://www.facebook.com/share/18M4oaggvG/?mibextid=wwXIfr',
@@ -64,11 +65,12 @@ async function ensureSettingsTable() {
   if (!hasNumber) {
     await pool.query(
       `INSERT INTO site_settings (key, value) VALUES
-       ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10), ($11, $12), ($13, $14), ($15, $16), ($17, $18), ($19, $20)
+       ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10), ($11, $12), ($13, $14), ($15, $16), ($17, $18), ($19, $20), ($21, $22)
        ON CONFLICT (key) DO NOTHING`,
       [
         'whatsapp_number', SETTINGS_DEFAULTS.whatsapp_number,
         'whatsapp_message', SETTINGS_DEFAULTS.whatsapp_message,
+        'whatsapp_tooltip', SETTINGS_DEFAULTS.whatsapp_tooltip,
         'social_instagram_url', SETTINGS_DEFAULTS.social_instagram_url,
         'social_instagram_label', SETTINGS_DEFAULTS.social_instagram_label,
         'social_facebook_url', SETTINGS_DEFAULTS.social_facebook_url,
@@ -99,6 +101,7 @@ app.get('/api/settings', async (_req, res) => {
       return res.json({
         whatsappNumber: SETTINGS_DEFAULTS.whatsapp_number,
         whatsappMessage: SETTINGS_DEFAULTS.whatsapp_message,
+        whatsappTooltip: SETTINGS_DEFAULTS.whatsapp_tooltip,
         social: mapToSocial(SETTINGS_DEFAULTS),
       });
     }
@@ -107,12 +110,14 @@ app.get('/api/settings', async (_req, res) => {
     res.json({
       whatsappNumber: map.whatsapp_number ?? SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: map.whatsapp_message ?? SETTINGS_DEFAULTS.whatsapp_message,
+      whatsappTooltip: map.whatsapp_tooltip ?? SETTINGS_DEFAULTS.whatsapp_tooltip,
       social: mapToSocial(map),
     });
   } catch (err) {
     res.json({
       whatsappNumber: SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: SETTINGS_DEFAULTS.whatsapp_message,
+      whatsappTooltip: SETTINGS_DEFAULTS.whatsapp_tooltip,
       social: mapToSocial(SETTINGS_DEFAULTS),
     });
   }
@@ -162,6 +167,12 @@ app.patch('/api/settings', async (req, res) => {
         ['whatsapp_message', String(whatsappMessage).trim()]
       );
     }
+    if (body.whatsappTooltip != null) {
+      await pool.query(
+        'INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = $2',
+        ['whatsapp_tooltip', String(body.whatsappTooltip).trim() || SETTINGS_DEFAULTS.whatsapp_tooltip]
+      );
+    }
     for (const [apiKey, dbKey] of Object.entries(keyMap)) {
       const val = socialBody[apiKey];
       if (val != null && String(val).trim() !== '') {
@@ -176,6 +187,7 @@ app.patch('/api/settings', async (req, res) => {
     res.json({
       whatsappNumber: map.whatsapp_number ?? SETTINGS_DEFAULTS.whatsapp_number,
       whatsappMessage: map.whatsapp_message ?? SETTINGS_DEFAULTS.whatsapp_message,
+      whatsappTooltip: map.whatsapp_tooltip ?? SETTINGS_DEFAULTS.whatsapp_tooltip,
       social: mapToSocial(map),
     });
   } catch (err) {
