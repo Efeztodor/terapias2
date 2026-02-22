@@ -58,13 +58,13 @@ const ContactSection = () => {
         }} transition={{
           duration: 0.6
         }} className="flex flex-col gap-6">
-            <a href="mailto:hola@paolaparedes.com" className="flex items-center gap-4 rounded-2xl bg-card border border-border/50 p-5 hover:shadow-md transition-shadow">
+            <a href="mailto:p.paredes.mendez@gmail.com" className="flex items-center gap-4 rounded-2xl bg-card border border-border/50 p-5 hover:shadow-md transition-shadow">
               <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-primary">
                 <Mail size={20} />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Email</p>
-                <p className="text-sm font-medium">paola.terapeuta@gmail.com</p>
+                <p className="text-sm font-medium">p.paredes.mendez@gmail.com</p>
               </div>
             </a>
 
